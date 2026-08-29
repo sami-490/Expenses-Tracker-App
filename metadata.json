@@ -1,0 +1,6 @@
+{
+  "name": "Daily Diary",
+  "description": "Private personal journaling and expense tracking dashboard with advance payment fund management and automatic Gmail cloud backup & restore.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
