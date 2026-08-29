@@ -1,0 +1,6 @@
+{
+  "appId": "com.expensestracker.pro",
+  "appName": "Expenses Tracker Pro",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
