@@ -84,6 +84,11 @@ export interface AdvanceDeposit {
   created_at: number;
 }
 
+export interface CategoryBudget {
+  category: string;
+  monthly_limit: number;
+}
+
 export interface ExpenseItem {
   id: string;
   title: string;
@@ -96,6 +101,7 @@ export interface ExpenseItem {
   advance_section_id?: string | null; // link to advance section if paid from advance
   notes?: string;
   receipt_url?: string;
+  receipt_name?: string;
   created_at: number;
 }
 
@@ -122,6 +128,14 @@ export interface AppSettings {
   backup_reminder_enabled: boolean;
   user_name: string;
   currency: string; // e.g. "$", "₹", "€", "£", "AED"
+  category_budgets?: CategoryBudget[];
+}
+
+export interface ToastNotification {
+  id: string;
+  type: 'success' | 'error' | 'info';
+  message: string;
+  duration?: number;
 }
 
 export interface GmailAccountInfo {

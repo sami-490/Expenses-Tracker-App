@@ -43,8 +43,28 @@ export const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ isOpen, on
   const [advanceSectionId, setAdvanceSectionId] = useState(safeAdvance[0]?.id || '');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
+  const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
+  const [receiptName, setReceiptName] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setError('Receipt image must be smaller than 3MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      if (typeof evt.target?.result === 'string') {
+        setReceiptUrl(evt.target.result);
+        setReceiptName(file.name);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (!isOpen) return null;
 
@@ -78,6 +98,8 @@ export const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ isOpen, on
       is_advance_deduction: isAdvanceDeduction,
       advance_section_id: isAdvanceDeduction ? advanceSectionId : null,
       notes: notes.trim() || undefined,
+      receipt_url: receiptUrl,
+      receipt_name: receiptName,
       created_at: Date.now(),
     };
 
@@ -89,6 +111,8 @@ export const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ isOpen, on
       setTitle('');
       setAmount('');
       setNotes('');
+      setReceiptUrl(undefined);
+      setReceiptName(undefined);
       setError(null);
       onClose();
     }, 400);
@@ -338,6 +362,26 @@ export const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ isOpen, on
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-500/40 text-stone-900 dark:text-stone-100 text-xs placeholder-stone-400 dark:placeholder-stone-500"
               />
+            </div>
+
+            {/* Receipt Upload */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5 flex items-center gap-1">
+                <Receipt className="w-3 h-3 text-amber-500" />
+                <span>Attach Receipt / Invoice</span>
+              </label>
+              <div className="flex items-center gap-3">
+                <label className="cursor-pointer flex items-center gap-2 px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 text-xs font-medium text-stone-700 dark:text-stone-300 transition-colors">
+                  <Receipt className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{receiptName ? 'Change Receipt' : 'Upload Receipt Photo'}</span>
+                  <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                </label>
+                {receiptName && (
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium truncate max-w-[200px]">
+                    ✓ {receiptName}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Modal Actions */}

@@ -127,6 +127,19 @@ export const DEFAULT_REMINDERS: Reminder[] = [
   },
 ];
 
+export const CURRENCIES = [
+  { code: 'PKR', symbol: 'Rs ', label: 'Pakistani Rupee (PKR)' },
+  { code: 'USD', symbol: '$', label: 'US Dollar ($)' },
+  { code: 'EUR', symbol: '€', label: 'Euro (€)' },
+  { code: 'GBP', symbol: '£', label: 'British Pound (£)' },
+  { code: 'INR', symbol: '₹', label: 'Indian Rupee (₹)' },
+  { code: 'AED', symbol: 'AED ', label: 'UAE Dirham (AED)' },
+  { code: 'SAR', symbol: 'SAR ', label: 'Saudi Riyal (SAR)' },
+  { code: 'CAD', symbol: 'CA$', label: 'Canadian Dollar (CA$)' },
+  { code: 'AUD', symbol: 'A$', label: 'Australian Dollar (A$)' },
+  { code: 'JPY', symbol: '¥', label: 'Japanese Yen (¥)' },
+];
+
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: 'light',
   accent_color: 'amber',
@@ -136,7 +149,15 @@ export const DEFAULT_SETTINGS: AppSettings = {
   daily_reminder_time: '21:00',
   backup_reminder_enabled: true,
   user_name: 'Journaler',
-  currency: 'PKR ',
+  currency: 'Rs ',
+  category_budgets: [
+    { category: 'Food & Dining', monthly_limit: 15000 },
+    { category: 'Groceries', monthly_limit: 25000 },
+    { category: 'Travel & Transit', monthly_limit: 10000 },
+    { category: 'Bills & Utilities', monthly_limit: 20000 },
+    { category: 'Shopping & Gear', monthly_limit: 15000 },
+    { category: 'Health & Wellness', monthly_limit: 10000 },
+  ],
 };
 
 export const INSPIRATIONAL_PROMPTS: string[] = [

@@ -4,6 +4,7 @@ import {
   BookOpen,
   CalendarDays,
   Receipt,
+  BarChart3,
   Settings,
 } from 'lucide-react';
 import { useDiary } from '../context/DiaryContext';
@@ -21,6 +22,7 @@ export const Navigation: React.FC = () => {
       icon: Receipt,
       badge: Array.isArray(expenses) && expenses.length > 0 ? `${expenses.length}` : undefined,
     },
+    { id: 'analytics' as const, label: 'Analytics & Reports', icon: BarChart3 },
     { id: 'settings' as const, label: 'Settings & Cloud', icon: Settings },
   ];
 

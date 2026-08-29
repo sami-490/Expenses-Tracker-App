@@ -19,6 +19,9 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   DollarSign,
+  Copy,
+  Eye,
+  X,
 } from 'lucide-react';
 import { useDiary } from '../../context/DiaryContext';
 import { ExpenseItem, AdvanceSection, PaymentMethod } from '../../types';
@@ -33,6 +36,7 @@ export const ExpenseAdvanceManager: React.FC = () => {
     advanceDeposits = [],
     saveExpense,
     deleteExpense,
+    duplicateExpense,
     createAdvanceSection,
     updateAdvanceSection,
     deleteAdvanceSection,
@@ -50,6 +54,8 @@ export const ExpenseAdvanceManager: React.FC = () => {
   const [showAddAdvanceModal, setShowAddAdvanceModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState<string | null>(null); // sectionId
   const [selectedAdvanceFilter, setSelectedAdvanceFilter] = useState<string | 'all'>('all');
+
+  const [viewingReceipt, setViewingReceipt] = useState<{ url: string; title: string } | null>(null);
 
   // Form states for new Expense
   const [expTitle, setExpTitle] = useState('');
@@ -506,13 +512,31 @@ export const ExpenseAdvanceManager: React.FC = () => {
                         -{currency}{exp.amount.toFixed(2)}
                       </td>
                       <td className="py-3.5 px-3 text-right">
-                        <button
-                          onClick={() => deleteExpense(exp.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 text-stone-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-all">
+                          {exp.receipt_url && (
+                            <button
+                              onClick={() => setViewingReceipt({ url: exp.receipt_url!, title: exp.title })}
+                              className="p-1.5 text-amber-600 hover:text-amber-700 dark:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-all"
+                              title="View Receipt"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => duplicateExpense(exp.id)}
+                            className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-all"
+                            title="Duplicate Expense"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteExpense(exp.id)}
+                            className="p-1.5 text-stone-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -910,6 +934,54 @@ export const ExpenseAdvanceManager: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL: Receipt Lightbox Viewer */}
+      <AnimatePresence>
+        {viewingReceipt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative max-w-2xl w-full bg-white dark:bg-stone-900 rounded-3xl p-5 shadow-2xl border border-stone-200 dark:border-stone-800 space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-stone-200/80 dark:border-stone-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-amber-500" />
+                  <h3 className="font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base">
+                    Receipt Attachment - {viewingReceipt.title}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setViewingReceipt(null)}
+                  className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-center p-2 bg-stone-900/5 dark:bg-stone-950/50 rounded-2xl border border-stone-200/50 dark:border-stone-800 min-h-[300px]">
+                <img
+                  src={viewingReceipt.url}
+                  alt="Receipt Preview"
+                  className="max-h-[60vh] object-contain rounded-xl shadow-md"
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 pt-2">
+                <span>Verified Expense Document</span>
+                <a
+                  href={viewingReceipt.url}
+                  download={`Receipt_${viewingReceipt.title.replace(/\s+/g, '_')}.png`}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold transition-all"
+                >
+                  Download Receipt Image
+                </a>
+              </div>
             </motion.div>
           </div>
         )}

@@ -22,8 +22,9 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { useDiary } from '../../context/DiaryContext';
-import { GmailBackupMetadata } from '../../types';
+import { GmailBackupMetadata, CategoryBudget } from '../../types';
 import { IconRenderer } from '../common/IconRenderer';
+import { CURRENCIES, EXPENSE_CATEGORIES } from '../../utils/constants';
 
 export const SettingsView: React.FC = () => {
   const {
@@ -46,11 +47,30 @@ export const SettingsView: React.FC = () => {
   } = useDiary();
 
   const [userName, setUserName] = useState(settings.user_name || '');
-  const [currency, setCurrency] = useState(settings.currency || 'PKR ');
+  const [currency, setCurrency] = useState(settings.currency || 'Rs ');
+  const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>(
+    settings.category_budgets || [
+      { category: 'Food & Dining', monthly_limit: 15000 },
+      { category: 'Groceries', monthly_limit: 25000 },
+      { category: 'Travel & Transit', monthly_limit: 10000 },
+      { category: 'Bills & Utilities', monthly_limit: 20000 },
+      { category: 'Shopping & Gear', monthly_limit: 15000 },
+      { category: 'Health & Wellness', monthly_limit: 10000 },
+    ]
+  );
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [pinMessage, setPinMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [importStatus, setImportStatus] = useState<string | null>(null);
+
+  const handleUpdateBudgetLimit = (category: string, limit: number) => {
+    const updated = categoryBudgets.map((b) => (b.category === category ? { ...b, monthly_limit: limit } : b));
+    if (!updated.some((b) => b.category === category)) {
+      updated.push({ category, monthly_limit: limit });
+    }
+    setCategoryBudgets(updated);
+    updateSettings({ category_budgets: updated });
+  };
 
   // Gmail backup list state
   const [gmailBackups, setGmailBackups] = useState<GmailBackupMetadata[]>([]);
@@ -375,15 +395,17 @@ export const SettingsView: React.FC = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1">
                   Expense & Ledger Currency
                 </label>
-                <div className="flex items-center gap-3">
-                  <div className="px-4 py-2.5 rounded-xl bg-amber-500 text-stone-950 font-bold text-sm border border-amber-600 shadow-sm flex items-center gap-2">
-                    <span className="font-mono">PKR</span>
-                    <span className="text-xs font-medium text-stone-900">(Pakistani Rupee)</span>
-                  </div>
-                  <span className="text-xs text-stone-500 dark:text-stone-400">
-                    All balances, advances, and expenses are tracked in PKR.
-                  </span>
-                </div>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-xs font-bold text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.symbol}>
+                      {c.label} ({c.symbol.trim()})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <button
@@ -393,6 +415,50 @@ export const SettingsView: React.FC = () => {
                 Save Preferences
               </button>
             </form>
+          </div>
+
+          {/* Category Monthly Budget Limits Card */}
+          <div className="bg-white dark:bg-stone-800/90 rounded-3xl border border-stone-200/80 dark:border-stone-700/80 p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <DollarSign className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">
+                  Monthly Category Budget Targets
+                </h2>
+                <p className="text-xs text-stone-500 dark:text-stone-400">
+                  Set target monthly spending caps per category for visual warnings
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {EXPENSE_CATEGORIES.map((cat) => {
+                const currentBudget = categoryBudgets.find((b) => b.category === cat.name)?.monthly_limit || 15000;
+                return (
+                  <div key={cat.name} className="flex items-center justify-between gap-3 p-2.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-6 h-6 rounded-lg flex items-center justify-center text-white shrink-0" style={{ backgroundColor: cat.color }}>
+                        <IconRenderer name={cat.icon} className="w-3.5 h-3.5" />
+                      </span>
+                      <span className="text-xs font-semibold text-stone-900 dark:text-stone-100 truncate">{cat.name}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{currency}</span>
+                      <input
+                        type="number"
+                        step="500"
+                        value={currentBudget}
+                        onChange={(e) => handleUpdateBudgetLimit(cat.name, parseFloat(e.target.value) || 0)}
+                        className="w-24 px-2 py-1 text-right text-xs font-mono font-bold rounded-lg bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 

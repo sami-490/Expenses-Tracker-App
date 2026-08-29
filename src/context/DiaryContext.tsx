@@ -9,7 +9,9 @@ import {
   AdvanceDeposit,
   GmailAccountInfo,
   GmailBackupMetadata,
+  ToastNotification,
 } from '../types';
+import { ToastContainer } from '../components/common/ToastContainer';
 import {
   loadStoredData,
   saveAllData,
@@ -34,14 +36,17 @@ interface DiaryContextType {
   reminders: Reminder[];
   settings: AppSettings;
   isLocked: boolean;
-  activeTab: 'home' | 'entries' | 'calendar' | 'expenses' | 'settings';
-  setActiveTab: (tab: 'home' | 'entries' | 'calendar' | 'expenses' | 'settings') => void;
+  activeTab: 'home' | 'entries' | 'calendar' | 'expenses' | 'analytics' | 'settings';
+  setActiveTab: (tab: 'home' | 'entries' | 'calendar' | 'expenses' | 'analytics' | 'settings') => void;
   editorDate: string | null;
   openEditor: (date?: string) => void;
   closeEditor: () => void;
   selectedEntryDetail: DiaryEntry | null;
   setSelectedEntryDetail: (entry: DiaryEntry | null) => void;
-  
+  toasts: ToastNotification[];
+  showToast: (message: string, type?: 'success' | 'error' | 'info', duration?: number) => void;
+  dismissToast: (id: string) => void;
+
   // Entry Operations
   saveEntry: (entry: DiaryEntry) => void;
   deleteEntry: (id: string) => void;
@@ -51,6 +56,7 @@ interface DiaryContextType {
   // Expense & Advance Operations
   saveExpense: (expense: ExpenseItem) => void;
   deleteExpense: (id: string) => void;
+  duplicateExpense: (id: string) => void;
   createAdvanceSection: (name: string, initialAmount: number, color?: string, icon?: string, description?: string) => AdvanceSection;
   updateAdvanceSection: (id: string, updates: Partial<AdvanceSection>) => void;
   deleteAdvanceSection: (id: string) => void;
@@ -103,12 +109,25 @@ const DiaryContext = createContext<DiaryContextType | undefined>(undefined);
 
 export const DiaryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState(() => loadStoredData());
-  const [activeTab, setActiveTab] = useState<'home' | 'entries' | 'calendar' | 'expenses' | 'settings'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'entries' | 'calendar' | 'expenses' | 'analytics' | 'settings'>('home');
   const [editorDate, setEditorDate] = useState<string | null>(null);
   const [selectedEntryDetail, setSelectedEntryDetail] = useState<DiaryEntry | null>(null);
+  const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [isLocked, setIsLocked] = useState<boolean>(() => {
     return Boolean(data.settings.is_pin_enabled && data.settings.pin_hash);
   });
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success', duration = 3500) => {
+    const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    setToasts((prev) => [...prev, { id, message, type, duration }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, duration);
+  }, []);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   // Gmail State
   const [gmailUser, setGmailUser] = useState<GmailAccountInfo | null>(() => GmailSyncService.getStoredUser());
@@ -241,7 +260,27 @@ export const DiaryProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...prev,
       expenses: prev.expenses.filter((x) => x.id !== id),
     }));
-  }, []);
+    showToast('Expense item deleted', 'info');
+  }, [showToast]);
+
+  const duplicateExpense = useCallback((id: string) => {
+    setData((prev) => {
+      const item = prev.expenses.find((e) => e.id === id);
+      if (!item) return prev;
+      const duplicated: ExpenseItem = {
+        ...item,
+        id: `exp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        title: `${item.title} (Copy)`,
+        date: getTodayDateString(),
+        created_at: Date.now(),
+      };
+      return {
+        ...prev,
+        expenses: [duplicated, ...prev.expenses].sort((a, b) => b.date.localeCompare(a.date) || b.created_at - a.created_at),
+      };
+    });
+    showToast('Expense duplicated successfully!', 'success');
+  }, [showToast]);
 
   const createAdvanceSection = useCallback(
     (name: string, initialAmount: number, color = '#3B82F6', icon = 'Briefcase', description = '') => {
@@ -597,6 +636,9 @@ export const DiaryProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         closeEditor,
         selectedEntryDetail,
         setSelectedEntryDetail,
+        toasts,
+        showToast,
+        dismissToast,
 
         // Entry Operations
         saveEntry,
@@ -607,6 +649,7 @@ export const DiaryProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Expenses & Advance
         saveExpense,
         deleteExpense,
+        duplicateExpense,
         createAdvanceSection,
         updateAdvanceSection,
         deleteAdvanceSection,
@@ -656,6 +699,7 @@ export const DiaryProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }}
     >
       {children}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </DiaryContext.Provider>
   );
 };

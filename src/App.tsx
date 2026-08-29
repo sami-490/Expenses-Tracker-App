@@ -6,6 +6,7 @@ import { DashboardView } from './components/Dashboard/DashboardView';
 import { TimelineView } from './components/Timeline/TimelineView';
 import { CalendarView } from './components/Calendar/CalendarView';
 import { ExpenseAdvanceManager } from './components/Expenses/ExpenseAdvanceManager';
+import { AnalyticsView } from './components/Analytics/AnalyticsView';
 import { SettingsView } from './components/Settings/SettingsView';
 import { EntryEditorModal } from './components/EntryEditor/EntryEditorModal';
 import { EntryDetailModal } from './components/Timeline/EntryDetailModal';
@@ -41,6 +42,7 @@ const MainApp: React.FC = () => {
         {activeTab === 'entries' && <TimelineView />}
         {activeTab === 'calendar' && <CalendarView />}
         {activeTab === 'expenses' && <ExpenseAdvanceManager />}
+        {activeTab === 'analytics' && <AnalyticsView />}
         {activeTab === 'settings' && <SettingsView />}
       </main>
 
