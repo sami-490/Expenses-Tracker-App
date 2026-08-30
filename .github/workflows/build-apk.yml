@@ -33,6 +33,13 @@ jobs:
           mkdir -p android/app/src/main/assets/public
           cp -r dist/* android/app/src/main/assets/public/
 
+      - name: Patch Capacitor Build Files for JDK 17
+        run: |
+          sed -i 's/8.13.0/8.2.2/g' node_modules/@capacitor/android/capacitor/build.gradle || true
+          sed -i 's/VERSION_21/VERSION_17/g' node_modules/@capacitor/android/capacitor/build.gradle || true
+          sed -i 's/compileSdkVersion : 36/compileSdkVersion : 34/g' node_modules/@capacitor/android/capacitor/build.gradle || true
+          sed -i 's/targetSdkVersion : 36/targetSdkVersion : 34/g' node_modules/@capacitor/android/capacitor/build.gradle || true
+
       - name: Build Android APK with Gradle
         run: |
           cd android
