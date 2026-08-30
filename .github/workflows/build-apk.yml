@@ -28,15 +28,15 @@ jobs:
           npm install
           npx vite build
 
-      - name: Sync Capacitor Android
+      - name: Copy Assets to Android Project
         run: |
-          npx cap sync android
+          npx cap copy android
 
       - name: Build Android APK with Gradle
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
