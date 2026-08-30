@@ -28,9 +28,10 @@ jobs:
           npm install
           npx vite build
 
-      - name: Copy Assets to Android Project
+      - name: Copy Built Web Assets to Android Assets Folder
         run: |
-          npx cap copy android
+          mkdir -p android/app/src/main/assets/public
+          cp -r dist/* android/app/src/main/assets/public/
 
       - name: Build Android APK with Gradle
         run: |
