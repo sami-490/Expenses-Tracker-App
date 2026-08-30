@@ -1,0 +1,7 @@
+// Cordova variables for Android plugins
+ext {
+    // These variables are referenced by Cordova plugins
+    cdvMinSdkVersion = minSdkVersion
+    cdvCompileSdkVersion = compileSdkVersion
+    cdvTargetSdkVersion = targetSdkVersion
+}
